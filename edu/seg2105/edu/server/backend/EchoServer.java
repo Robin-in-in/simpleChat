@@ -4,6 +4,8 @@ package edu.seg2105.edu.server.backend;
 // license found at www.lloseng.com 
 
 
+import java.io.IOException;
+
 import edu.seg2105.client.ui.ServerConsole;
 import ocsf.server.*;
 
@@ -24,6 +26,7 @@ public class EchoServer extends AbstractServer
    * The default port to listen on.
    */
   final public static int DEFAULT_PORT = 5555;
+  
   
   //Constructors ****************************************************
   
@@ -49,8 +52,29 @@ public class EchoServer extends AbstractServer
   public void handleMessageFromClient
     (Object msg, ConnectionToClient client)
   {
-    System.out.println("Message received: " + msg + " from " + client);
-    this.sendToAllClients(msg);
+	if(String.valueOf(msg).startsWith("#login")||client.getInfo("UID")==null) {
+		if(client.getInfo("UID")==null) {
+			String[] parts = String.valueOf(msg).split(" ", 2);
+	        if (parts.length == 2) {
+	            client.setInfo("UID", parts[1]);
+	            System.out.println("CurrentUID set to: " + parts[1]);
+	            return;
+	        } else {
+	            System.out.println("Usage: #login <UID>");
+	        }
+		} else {
+			System.out.println("Imporper login. Terminating connection.");	
+		}
+		try {
+			client.close();
+		} catch(IOException e) {
+			System.out.println("Failed to terminate client.");
+		}
+		
+  	}  else {
+  		System.out.println("Message received: " + msg + " from " + client);
+  		this.sendToAllClients(String.valueOf(client.getInfo("UID")) + "> " + msg);
+  	}   
   }
     
   /**
@@ -122,7 +146,6 @@ public class EchoServer extends AbstractServer
 		ServerConsole chat= new ServerConsole("localhost", getPort(), server);
 		chat.accept();
 	}
-	
 
 }
 //End of EchoServer class

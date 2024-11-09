@@ -28,6 +28,11 @@ public class ServerConsole implements ChatIF
    */
   final public static int DEFAULT_PORT = 5555;
   
+  /*
+   * Default UID of ServerConsoleUser.
+   */
+  public static final int SERVER_CONSOLE_ID = 777;
+  
   //Instance variables **********************************************
   
   /**
@@ -54,12 +59,14 @@ public class ServerConsole implements ChatIF
    * @param host The host to connect to.
    * @param port The port to connect on.
    */
+  
+  
   public ServerConsole(String host, int port, EchoServer server) 
   {
 	this.server = server;
     try 
     {
-      serverClient= new ChatClient(host, port, this);
+      serverClient= new ChatClient(SERVER_CONSOLE_ID,host, port, this);
     } 
     catch(IOException exception) 
     {

@@ -50,11 +50,11 @@ public class ClientConsole implements ChatIF
    * @param host The host to connect to.
    * @param port The port to connect on.
    */
-  public ClientConsole(String host, int port) 
+  public ClientConsole(int UID ,String host, int port) 
   {
     try 
     {
-      client= new ChatClient(host, port, this);
+      client= new ChatClient(UID, host, port, this);
       
       
     } 
@@ -128,8 +128,9 @@ public class ClientConsole implements ChatIF
         		}
         	}
         	//Parsing login command
-        	else if(command.equals("#login")) {
+        	else if(command.startsWith("#login")) {
         		client.openConnection();
+        		client.handleMessageFromClientUI(command);
         	} 
         	//Parsing getHost command
         	else if(command.equals("#gethost") ) {
@@ -176,13 +177,24 @@ public class ClientConsole implements ChatIF
   {
     String host = "";
     int port = 0;
+    int UID=0;
+    
+    try {
+    	UID = Integer.parseInt(args[0]);
+    } catch(ArrayIndexOutOfBoundsException e) {
+    	System.out.println("Must provide User Id as first argument. Terminating program");
+    	return;
+    } catch(NumberFormatException e) {
+    	System.out.println("Must provide User Id as integer. Terminating program");
+    	return;
+    }
 
 
     try
     {
-      host = args[0];
+      host = args[1];
       try {
-          port = Integer.valueOf(args[1]);
+          port = Integer.parseInt(args[2]);
       }
       catch(NumberFormatException e) {
     	  port = DEFAULT_PORT;
@@ -193,7 +205,7 @@ public class ClientConsole implements ChatIF
       host = "localhost";
       port = DEFAULT_PORT;
     }
-    ClientConsole chat= new ClientConsole(host, port);
+    ClientConsole chat= new ClientConsole(UID, host, port);
     chat.accept();//Wait for console data
   }
 }
