@@ -9,6 +9,7 @@ import ocsf.client.*;
 import java.io.*;
 
 import edu.seg2105.client.common.*;
+import edu.seg2105.client.ui.ServerConsole;
 
 /**
  * This class overrides some of the methods defined in the abstract
@@ -56,11 +57,7 @@ public class ChatClient extends AbstractClient
    * @param msg The message from the server.
    */
   public void handleMessageFromServer(Object msg) 
-  {
-    clientUI.display(msg.toString());
-    
-    
-  }
+  {}
 
   /**
    * This method handles all data coming from the UI            
@@ -81,6 +78,19 @@ public class ChatClient extends AbstractClient
     }
   }
   
+  
+  public void handleMessageFromServer(String message) {
+	  try {
+		  if(clientUI instanceof ServerConsole) {
+			  sendToServer("SERVER MSG> " + message);
+		  }
+		  sendToServer(message);
+	  } catch(IOException e){
+	      clientUI.display
+	        ("Could not send message to server.  Terminating client.");
+	      quit();
+	  }
+  }
   /**
    * This method terminates the client.
    */
@@ -95,13 +105,11 @@ public class ChatClient extends AbstractClient
   }
   
   protected void connectionClosed() {
-		clientUI.display("The server has closed. Terminating client.");
-		quit();
+		clientUI.display("Connection to server terminated.");
 	}
 
 	protected void connectionException() {
-		clientUI.display("The server has disconnected. Terminating client.");
-		quit();
+		clientUI.display("An exception has occured. Connection to server terminated.");
 	}
 }
 

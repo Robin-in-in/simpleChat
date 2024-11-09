@@ -8,6 +8,7 @@ import java.util.Scanner;
 
 import edu.seg2105.client.backend.ChatClient;
 import edu.seg2105.client.common.*;
+import edu.seg2105.edu.server.backend.EchoServer;
 
 /**
  * This class constructs the UI for a chat client.  It implements the
@@ -18,7 +19,7 @@ import edu.seg2105.client.common.*;
  * @author Dr Timothy C. Lethbridge  
  * @author Dr Robert Lagani&egrave;re
  */
-public class ClientConsole implements ChatIF 
+public class ServerConsole implements ChatIF 
 {
   //Class variables *************************************************
   
@@ -30,11 +31,14 @@ public class ClientConsole implements ChatIF
   //Instance variables **********************************************
   
   /**
-   * The instance of the client that created this ConsoleChat.
+   * The instance of the client that created this ServerConsole.
    */
-  ChatClient client;
+  ChatClient serverClient;
   
-  
+  /*
+   * The instance of the server related to this ServerConsole.
+   */
+  EchoServer server;
   
   /**
    * Scanner to read from the console
@@ -45,18 +49,17 @@ public class ClientConsole implements ChatIF
   //Constructors ****************************************************
 
   /**
-   * Constructs an instance of the ClientConsole UI.
+   * Constructs an instance of the ServerConsole UI.
    *
    * @param host The host to connect to.
    * @param port The port to connect on.
    */
-  public ClientConsole(String host, int port) 
+  public ServerConsole(String host, int port, EchoServer server) 
   {
+	this.server = server;
     try 
     {
-      client= new ChatClient(host, port, this);
-      
-      
+      serverClient= new ChatClient(host, port, this);
     } 
     catch(IOException exception) 
     {
@@ -92,33 +95,23 @@ public class ClientConsole implements ChatIF
         	command = message;
         	//Parsing quit command
         	if(command.equals("#quit")) {
-        		client.quit();
+        		System.out.println("Terminating ServerConsole.");
+        		return;
         	} 
         	//Parsing logoff command
-        	else if(command.equals("#logoff")) {
-        		if(client.isConnected()) {
-            		client.closeConnection();
-        		}
+        	else if(command.equals("#stop")) {
+        		server.stopListening();
         	} 
         	//Parsing sethost command (must be logged off)
-        	else if(command.startsWith("#sethost")) {
-        		if(!client.isConnected()) {
-        			String[] parts = command.split(" ", 2);
-                    if (parts.length == 2) {
-                        client.setHost(parts[1]);
-                    } else {
-                        System.out.println("Usage: #sethost <host>");
-                    }
-        		} else {
-        			System.out.println("Invalid command- Already logged in.");
-        		}
+        	else if(command.equals("#close")) {
+        		server.close();
         	}
         	//Parsing setport command (must be logged off)
         	else if(command.startsWith("#setport")) {
-        		if(!client.isConnected()) {
+        		if(server.isClosed()) {
         			String[] parts = command.split(" ", 2);
                     if (parts.length == 2) {
-                        client.setPort(Integer.parseInt(parts[1]));
+                        server.setPort(Integer.parseInt(parts[1]));
                         System.out.println("Port set to: " + parts[1]);
                     } else {
                         System.out.println("Usage: #setport <port>");
@@ -128,21 +121,19 @@ public class ClientConsole implements ChatIF
         		}
         	}
         	//Parsing login command
-        	else if(command.equals("#login")) {
-        		client.openConnection();
+        	else if(command.equals("#start")) {
+        		if(!server.isListening()) {
+        			server.listen();
+        		}
         	} 
-        	//Parsing getHost command
-        	else if(command.equals("#gethost") ) {
-        		System.out.println("Current host is: " + client.getHost());
-        	}
         	//Parsing getPort command
         	else if(command.equals("#getport")) {
-        		System.out.println("Current port number is: " + String.valueOf(client.getPort()));
+        		System.out.println("Current port number is: " + String.valueOf(server.getPort()));
         	} else {
         		System.out.println("Invalid command.");
         	}
         } else {
-        	client.handleMessageFromClientUI(message);
+        	serverClient.handleMessageFromClientUI(message);
         }
       }
     } 
@@ -163,38 +154,5 @@ public class ClientConsole implements ChatIF
   {
     System.out.println("> " + message);
   }
-
-  
-  //Class methods ***************************************************
-  
-  /**
-   * This method is responsible for the creation of the Client UI.
-   *
-   * @param args[0] The host to connect to.
-   */
-  public static void main(String[] args) 
-  {
-    String host = "";
-    int port = 0;
-
-
-    try
-    {
-      host = args[0];
-      try {
-          port = Integer.valueOf(args[1]);
-      }
-      catch(NumberFormatException e) {
-    	  port = DEFAULT_PORT;
-      }
-    }
-    catch(ArrayIndexOutOfBoundsException e)
-    {
-      host = "localhost";
-      port = DEFAULT_PORT;
-    }
-    ClientConsole chat= new ClientConsole(host, port);
-    chat.accept();//Wait for console data
-  }
 }
-//End of ConsoleChat class
+//End of ServerChat class
