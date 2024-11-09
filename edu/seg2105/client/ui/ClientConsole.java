@@ -80,13 +80,70 @@ public class ClientConsole implements ChatIF
   {
     try
     {
-
-      String message;
+    	String message, command;
 
       while (true) 
       {
         message = fromConsole.nextLine();
-        client.handleMessageFromClientUI(message);
+        
+        //User is attempting to pass command
+        
+        if(message.charAt(0)=='#') {
+        	command = message;
+        	//Parsing quit command
+        	if(command.equals("#quit")) {
+        		client.quit();
+        	} 
+        	//Parsing logoff command
+        	else if(command.equals("#logoff")) {
+        		if(client.isConnected()) {
+            		client.closeConnection();
+        		}
+        	} 
+        	//Parsing sethost command (must be logged off)
+        	else if(command.startsWith("#sethost")) {
+        		if(!client.isConnected()) {
+        			String[] parts = command.split(" ", 2);
+                    if (parts.length == 2) {
+                        client.setHost(parts[1]);
+                    } else {
+                        System.out.println("Usage: #sethost <host>");
+                    }
+        		} else {
+        			System.out.println("Invalid command- Already logged in.");
+        		}
+        	}
+        	//Parsing setport command (must be logged off)
+        	else if(command.startsWith("#setport")) {
+        		if(!client.isConnected()) {
+        			String[] parts = command.split(" ", 2);
+                    if (parts.length == 2) {
+                        client.setPort(Integer.getInteger(parts[1]));
+                    } else {
+                        System.out.println("Usage: #setport <port>");
+                    }
+        		} else {
+        			System.out.println("Invalid command- Already logged in.");
+        		}
+        	}
+        	//Parsing login command
+        	else if(command.equals("#login")) {
+        		client.openConnection();
+        	} 
+        	//Parsing getHost command
+        	else if(command.equals("#gethost") ) {
+        		System.out.println("Current host is: " + client.getHost());
+        	}
+        	//Parsing getPort command
+        	else if(command.equals("#getport")) {
+        		System.out.println("Current port number is: " + String.valueOf(client.getPort()));
+        	} else {
+        		//Pass as message, server will handle if servercommand
+        		client.handleMessageFromClientUI(command);
+        	}
+        } else {
+        	client.handleMessageFromClientUI(message);
+        }
       }
     } 
     catch (Exception ex) 
@@ -118,18 +175,26 @@ public class ClientConsole implements ChatIF
   public static void main(String[] args) 
   {
     String host = "";
+    int port = 0;
 
 
     try
     {
       host = args[0];
+      try {
+          port = Integer.valueOf(args[1]);
+      }
+      catch(NumberFormatException e) {
+    	  port = DEFAULT_PORT;
+      }
     }
     catch(ArrayIndexOutOfBoundsException e)
     {
       host = "localhost";
+      port = DEFAULT_PORT;
     }
-    ClientConsole chat= new ClientConsole(host, DEFAULT_PORT);
-    chat.accept();  //Wait for console data
+    ClientConsole chat= new ClientConsole(host, port);
+    chat.accept();//Wait for console data
   }
 }
 //End of ConsoleChat class

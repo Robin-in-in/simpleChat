@@ -48,6 +48,66 @@ public class EchoServer extends AbstractServer
   public void handleMessageFromClient
     (Object msg, ConnectionToClient client)
   {
+	  /*
+	   * //User is attempting to pass command
+        
+        if(message.charAt(0)=='#') {
+        	command = message;
+        	//Parsing quit command
+        	if(command.equals("#quit")) {
+        		client.quit();
+        	} 
+        	//Parsing logoff command
+        	else if(command.equals("#logoff")) {
+        		if(loggedIn) {
+            		client.closeConnection();
+            		loggedIn = false;
+        		}
+        	} 
+        	//Parsing sethost command (must be logged off)
+        	else if(command.startsWith("#sethost")) {
+        		if(!loggedIn) {
+        			String[] parts = command.split(" ", 2);
+                    if (parts.length == 2) {
+                        client.setHost(parts[1]);
+                    } else {
+                        System.out.println("Usage: #sethost <host>");
+                    }
+        		} else {
+        			System.out.println("Invalid command- Already logged in.");
+        		}
+        	}
+        	//Parsing setport command (must be logged off)
+        	else if(command.startsWith("#setport")) {
+        		if(!loggedIn) {
+        			String[] parts = command.split(" ", 2);
+                    if (parts.length == 2) {
+                        client.setPort(Integer.getInteger(parts[1]));
+                    } else {
+                        System.out.println("Usage: #setport <port>");
+                    }
+        		} else {
+        			System.out.println("Invalid command- Already logged in.");
+        		}
+        	}
+        	//Parsing login command
+        	else if(command.equals("#login")) {
+        		client.openConnection();
+        		loggedIn=true;
+        	} 
+        	//Parsing getHost command
+        	else if(command.equals("#gethost") ) {
+        		System.out.println("Current host is: " + client.getHost());
+        	}
+        	//Parsing getPort command
+        	else if(command.equals("#getport")) {
+        		System.out.println("Current port number is: " + String.valueOf(client.getPort()));
+        	} else {
+        		//Pass as message, server will handle if servercommand
+        		client.handleMessageFromClientUI(command);
+        	}
+        }
+	   */
     System.out.println("Message received: " + msg + " from " + client);
     this.sendToAllClients(msg);
   }
@@ -106,5 +166,13 @@ public class EchoServer extends AbstractServer
       System.out.println("ERROR - Could not listen for clients!");
     }
   }
+
+	protected void clientConnected(ConnectionToClient client) {
+		System.out.println("Client connected!");
+	}
+
+	synchronized protected void clientDisconnected(ConnectionToClient client) {
+		System.out.println("Client disconnected.");
+	}
 }
 //End of EchoServer class
